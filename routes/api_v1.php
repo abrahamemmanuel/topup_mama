@@ -1,7 +1,6 @@
 <?php
 
 /*\Laravel\Lumen\Routing\Router $router */
-use App\Http\Controllers\BookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +13,5 @@ use App\Http\Controllers\BookController;
 |
 */
 
-$router->group(['prefix' => 'api/v1'], function () use ($router) {
-    $router->get('/books', 'BookController@list');
-});
+$router->get('/books', 'BookController@list');
+
