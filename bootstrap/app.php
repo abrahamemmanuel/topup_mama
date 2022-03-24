@@ -25,7 +25,7 @@ $app = new Laravel\Lumen\Application(
 
 // $app->withFacades();
 
-// $app->withEloquent();
+$app->withEloquent();
 
 /*
 |--------------------------------------------------------------------------
@@ -94,6 +94,7 @@ $app->configure('app');
 // $app->register(App\Providers\AppServiceProvider::class);
 // $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
+$app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
 
 /*
 |--------------------------------------------------------------------------
@@ -108,7 +109,11 @@ $app->configure('app');
 
 $app->router->group([
     'namespace' => 'App\Http\Controllers',
+    'namespace' => 'App\Http\Controllers\Api\V1',
 ], function ($router) {
+    $router->group(['prefix' => 'api/v1'], function () use ($router) {
+        require __DIR__.'/../routes/api_v1.php';
+    });
     require __DIR__.'/../routes/web.php';
 });
 
