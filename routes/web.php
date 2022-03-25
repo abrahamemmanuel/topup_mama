@@ -15,5 +15,7 @@ use App\Http\Controllers\BookController;
 */
 
 $router->group(['prefix' => 'api/v1'], function () use ($router) {
-    $router->get('/books', 'BookController@list');
+    $router->get('/books', 'BookController@getBooks');
+    $router->get('/books/{id}', 'BookController@getBookById');
+    $router->get('/books/{book_id}/characters', 'BookController@getBookCharactersList');
 });
