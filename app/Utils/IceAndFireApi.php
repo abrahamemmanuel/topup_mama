@@ -84,7 +84,7 @@ class IceAndFireApi
 		$books = self::httpConnector($uri, $http_verb);
 		return $books;
 	}
-	
+
 	protected static function httpConnector($uri, $http_verb)
   {
     try{
