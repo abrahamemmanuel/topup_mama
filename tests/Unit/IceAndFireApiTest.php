@@ -29,7 +29,7 @@ class IceAndFireApiTest extends TestCase
      */
     public function should_get_book_by_id()
     {
-        $book_id = 12;
+        $book_id = 1;
         $iceAndFireApi = new IceAndFireApi();
         $book = $iceAndFireApi->getBookById($book_id);
         $this->assertIsArray($book);

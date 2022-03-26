@@ -5,48 +5,64 @@ namespace app\Utils;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\ConnectException;
+use Illuminate\Http\Request;
 
 class IceAndFireApi 
 {
 	private $base_uri = "https://anapioficeandfire.com/api/";
+	public $page = 1;
+	public $pageSize = 10;
+	public $queryParams = [];
+	public $gender = null;
 
 	public function getBooks($query_params)
 	{
 		$uri = $this->base_uri . 'books?' . $query_params;
 		$http_verb = 'GET';
-		$data = self::httpConnector($uri, $http_verb);
-		$books = [];
-			foreach ($data as $book) {
-				$books[] = $this->bookResource($book);
-			}
-		return $books;
+		return self::httpConnector($uri, $http_verb);
 	}
 
 	public function getBookById($book_id)
 	{
-		return $this->bookResource(self::bookLoader($book_id));
+		$uri = $this->base_uri . 'books/' . $book_id;
+		$http_verb = 'GET';
+		return self::httpConnector($uri, $http_verb);
 	}
 
-	public function getSingleBookCharactersList($book_id)
-	{
-		$book = self::bookLoader($book_id);
-		$characters_list = $book['characters'];
-		return $characters_list;
-	}
-
-	public function getSingleBookCharacters($query_params, $book_id)
+	public function getCharacters($query_params) 	
 	{
 		$uri = $this->base_uri . 'characters?' . $query_params;
 		$http_verb = 'GET';
-		$data = self::httpConnector($uri, $http_verb);
-		$characters_list = $this->getSingleBookCharactersList($book_id);
-		$characters = [];
-		foreach ($data as $character) {
-			if(in_array($character['url'], $characters_list)) {
-				$characters[] = $this->characterResource($character);
-			}
+		return self::httpConnector($uri, $http_verb);
+	}
+
+	protected static function httpConnector($uri, $http_verb)
+  {
+    try{
+				$client = new Client();
+				$response = $client->request($http_verb, $uri, [
+						'headers' => [
+						'Accept' => 'application/json',
+						'Content-Type' => 'application/json',
+						], 
+				]);
+			return json_decode($response->getBody()->getContents(), true);
+		} catch (BadResponseException $e) {
+			return response()->json(['error' => $e->getMessage()], $e->getCode());
+		} catch (ConnectException $e) {
+			return response()->json(['error' => $e->getMessage()], $e->getCode());
 		}
-		return $characters;
+  }
+
+	public function getQueryParams($request)
+	{
+		$this->page = $request->has('page') ? $request->page : $this->page;
+		$this->pageSize = $request->has('pageSize') ? $request->pageSize : $this->pageSize;
+		$this->gender = $request->has('gender') ? $request->gender : $this->gender;
+		$this->queryParams = $this->gender != null 
+		? ['page' => $this->page, 'pageSize' => $this->pageSize, 'gender' => $this->gender] 
+		: ['page' => $this->page, 'pageSize' => $this->pageSize];
+		return http_build_query($this->queryParams);
 	}
 
 	public function bookResource($book)
@@ -77,29 +93,4 @@ class IceAndFireApi
 		];
 	}
 
-	protected function bookLoader($id)
-	{
-		$uri = $this->base_uri . 'books/' . $id;
-		$http_verb = 'GET';
-		$books = self::httpConnector($uri, $http_verb);
-		return $books;
-	}
-
-	protected static function httpConnector($uri, $http_verb)
-  {
-    try{
-						$client = new Client();
-            $response = $client->request($http_verb, $uri, [
-                'headers' => [
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-                ], 
-            ]);
-			return json_decode($response->getBody()->getContents(), true);
-		} catch (BadResponseException $e) {
-			return $e->getMessage();
-		} catch (ConnectException $e) {
-			return $e->getMessage();
-		}
-  }
 }
