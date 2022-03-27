@@ -66,16 +66,16 @@ class IceAndFireApi
 		return http_build_query($this->queryParams);
 	}
 
-	public function paginate($request)
+	public function paginate($request, $item)
 	{
 		$this->buildQueryParams($request);
 		$page = $this->page;
 		$pageSize = $this->pageSize;
 		$prevPage = $page > 1 ? $page - 1 : null;
 		return [
-			'current' => url('/books?'.http_build_query($this->queryParams)),
-			'next' => url('/books?page='.($page+1).'&pageSize='.$pageSize),
-			'prev' => $prevPage ? url('/books?page='.$prevPage.'&pageSize='.$pageSize) : null,
+			'current' => url($item.http_build_query($this->queryParams)),
+			'next' => url($item.'page='.($page+1).'&pageSize='.$pageSize),
+			'prev' => $prevPage ? url($item.'page='.$prevPage.'&pageSize='.$pageSize) : null,
 		];
 	}
 
