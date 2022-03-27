@@ -11,7 +11,7 @@ class BookController extends Controller
     {
         //Network Call
         $iceAndFireApi = new IceAndFireApi();
-        $queryParams = $iceAndFireApi->getQueryParams($request);
+        $queryParams = $iceAndFireApi->buildQueryParams($request);
         $response = $iceAndFireApi->getBooks($queryParams);
 
         //Error Handling
@@ -24,21 +24,11 @@ class BookController extends Controller
             $books[] = $iceAndFireApi->bookResource($book);
         }
 
-        //Pagination
-        $page = $iceAndFireApi->page;
-        $pageSize = $iceAndFireApi->pageSize;
-        $prevPage = $page > 1 ? $page - 1 : null;
-        $links = [
-            'current' => url('/books?'.$queryParams),
-            'next' => url('/books?page='.($page+1).'&pageSize='.$pageSize),
-            'prev' => $prevPage ? url('/books?page='.$prevPage.'&pageSize='.$pageSize) : null,
-        ];
-
         //Meta Data
         $meta_data = [
             'page' => $page,
             'pageSize' => $pageSize,
-            'total' => count($books),
+            'total_books' => count($books),
         ];
 
         //Payload
@@ -46,7 +36,7 @@ class BookController extends Controller
             'status' => 'success',
             'message' => 'Books fetched successfully',
             'books' => $books,
-            'links' => $links,
+            'links' => $iceAndFireApi->paginate($request),
             'meta_data' => $meta_data
         ];
 
@@ -77,40 +67,59 @@ class BookController extends Controller
         return response()->json($data, 200);
     }
 
-    public function getBookCharactersList(Request $request, $book_id)
+    public function getBookCharacters(Request $request, $book_id)
     {
-        //Query Builder
-        $sortOrder = $request->has('sortOrder') ? $request->sortOrder : null;
+		//Set Sort Order
+		$sortOrder = $request->has('sortOrder') ? $request->sortOrder : null;
 
-        //Network Call
-        $iceAndFireApi = new IceAndFireApi();
-        $queryParams = $iceAndFireApi->getQueryParams($request);
-        $response = $iceAndFireApi->getBookById($id);
+		//First Network Call: Fetch Book By Id
+		$iceAndFireApi = new IceAndFireApi();
+		$queryParams = $iceAndFireApi->buildQueryParams($request);
+		$bookResponse = $iceAndFireApi->getBookById($book_id);
 
-        //Error Handling
-       if($response instanceof \Illuminate\Http\JsonResponse) return $response;
-       $characters_list = $response['characters'];
-       if(is_array($response)){
-            $characters = $response;
-            if($sort != null){
-                $characters = $sort == 'name-desc' ? array_reverse($characters) : $characters;
-            }
-            $data = [
-                'status' => 'success',
-                'message' => 'Characters fetched successfully',
-                'characters' => $characters,
-                'meta_data' => [
-                    'book_id' => $book_id,
-                    'total_characters' => count($characters),
-                    'page_size' => $pageSize,
-                    'page' => $page,
-                    'sort' => $sort != null ? $sort : null,
-                    'filter' => $gender != null ? $gender . '-gender' : 'male & female'
-                ],
-            ];
-            $response = response()->json($data, 200);
-            return $response;
-        }
-        if($response->getStatusCode() !== 200) return $response;
+		//Error Handling
+		if($bookResponse instanceof \Illuminate\Http\JsonResponse) return $bookResponse;
+		
+		//Retrieve Characters List from book response
+		$characters_list = $bookResponse['characters'];
+
+		//Second Network Call: Fetch All Characters
+		$charactersResponse = $iceAndFireApi->getCharacters($queryParams);
+
+		//Error Handling
+		if($charactersResponse instanceof \Illuminate\Http\JsonResponse) return $charactersResponse;
+
+		//Data Mapping:
+		$characters = [];
+		foreach ($charactersResponse as $character) {
+			if(in_array($character['url'], $characters_list)) {
+				$characters[] = $iceAndFireApi->characterResource($character);
+			}
+		}
+
+		//Apply Sort
+		$characters = $iceAndFireApi->sortCharacters($characters, $sortOrder);
+
+		//Meta Data
+		$meta_data = [
+			'book_id' => $book_id,
+			'page' => $iceAndFireApi->page,
+			'page_size' => $iceAndFireApi->pageSize,
+			'total_characters_matched_on_current_page' => count($characters),
+			'sort_order' =>  $sortOrder != null ? $sortOrder : null,
+			'filter' => $iceAndFireApi->gender != null ? $iceAndFireApi->gender . '-gender' : 'male & female'
+		];
+
+		//Payload
+		$data = [
+			'status' => 'success',
+			'message' => 'Characters fetched successfully',
+			'characters' => $characters,
+			'links' => $iceAndFireApi->paginate($request),
+			'meta_data' => $meta_data
+		];
+		
+		//Response
+		return response()->json($data, 200);
     }
 }

@@ -14,6 +14,7 @@ class IceAndFireApi
 	public $pageSize = 10;
 	public $queryParams = [];
 	public $gender = null;
+	public $sortOrder = null;
 
 	public function getBooks($query_params)
 	{
@@ -39,22 +40,22 @@ class IceAndFireApi
 	protected static function httpConnector($uri, $http_verb)
   {
     try{
-				$client = new Client();
-				$response = $client->request($http_verb, $uri, [
-						'headers' => [
-						'Accept' => 'application/json',
-						'Content-Type' => 'application/json',
-						], 
-				]);
-			return json_decode($response->getBody()->getContents(), true);
-		} catch (BadResponseException $e) {
-			return response()->json(['error' => $e->getMessage()], $e->getCode());
-		} catch (ConnectException $e) {
-			return response()->json(['error' => $e->getMessage()], $e->getCode());
-		}
+		$client = new Client();
+		$response = $client->request($http_verb, $uri, [
+			'headers' => [
+			'Accept' => 'application/json',
+			'Content-Type' => 'application/json',
+			], 
+		]);
+		return json_decode($response->getBody()->getContents(), true);
+	} catch (BadResponseException $e) {
+		return response()->json(['error' => $e->getMessage()], $e->getCode());
+	} catch (ConnectException $e) {
+		return response()->json(['error' => $e->getMessage()], $e->getCode());
+	}
   }
 
-	public function getQueryParams($request)
+	public function buildQueryParams($request)
 	{
 		$this->page = $request->has('page') ? $request->page : $this->page;
 		$this->pageSize = $request->has('pageSize') ? $request->pageSize : $this->pageSize;
@@ -63,6 +64,25 @@ class IceAndFireApi
 		? ['page' => $this->page, 'pageSize' => $this->pageSize, 'gender' => $this->gender] 
 		: ['page' => $this->page, 'pageSize' => $this->pageSize];
 		return http_build_query($this->queryParams);
+	}
+
+	public function paginate($request)
+	{
+		$this->buildQueryParams($request);
+		$page = $this->page;
+		$pageSize = $this->pageSize;
+		$prevPage = $page > 1 ? $page - 1 : null;
+		return [
+			'current' => url('/books?'.http_build_query($this->queryParams)),
+			'next' => url('/books?page='.($page+1).'&pageSize='.$pageSize),
+			'prev' => $prevPage ? url('/books?page='.$prevPage.'&pageSize='.$pageSize) : null,
+		];
+	}
+
+	public function sortCharacters($items, $order)
+	{
+		$this->sortOrder = $order;
+		return $this->sortOrder == 'name-desc' ? array_reverse($items) : $items;
 	}
 
 	public function bookResource($book)
