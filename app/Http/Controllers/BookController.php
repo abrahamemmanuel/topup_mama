@@ -25,25 +25,27 @@ class BookController extends Controller
             $books[] = $iceAndFireApi->bookResource($book);
         }
 
-		//Set Comments Count For Each Book
+		//Update Comments Count For Each Book
+		$book_collections = [];
 		foreach ($books as $book) {
-			$book['comments_count'] = 0;
 			$comments = Comment::where('book_id', $book['book_id'])->get();
-			$book['comments_count'] = count($comments) > 0 ? count($comments) : 0;
+			$count = $comments->count();
+			$book['comments_count'] = $count > 0 ? $count : $book['comments_count'];
+			$book_collections[] = $book;
 		}
 
         //Meta Data
         $meta_data = [
             'page' => $iceAndFireApi->page,
             'pageSize' => $iceAndFireApi->pageSize,
-            'total_books' => count($books),
+            'total_books' => count($book_collections),
         ];
 
         //Payload
         $data = [
             'status' => 'success',
             'message' => 'Books fetched successfully',
-            'books' => $books,
+            'books' => $book_collections,
             'links' => $iceAndFireApi->paginate($request, '/books?'),
             'meta_data' => $meta_data
         ];
@@ -66,14 +68,15 @@ class BookController extends Controller
 
 		//Retrieve Comments From DB By Book Id In a Reverse Chronological Order
 		$comments = Comment::where('book_id', $id)->orderBy('created_at', 'desc')->get();
-		$book['comments'] = $comments;
+		$book['comments_count'] = count($comments);
 
         //Payload
         $data = [
             'status' => 'success',
             'message' => 'Book fetched successfully',
             'book' => $book,
-        ];
+			'comments' => $comments
+		];
 
         //Response
         return response()->json($data, 200);
@@ -139,25 +142,21 @@ class BookController extends Controller
 	{	
 		//Validate Request
 		$validator = $this->validate($request, [
-			'body' => 'required|string|max:255',
+			'body' => 'required|string|max:500',
 		]);
 
 		//Network Call
 		$iceAndFireApi = new IceAndFireApi();
 		$response = $iceAndFireApi->getBookById($book_id);
 
-		//Error Handling
+		//Error Handling: Check if book exists
 		if($response instanceof \Illuminate\Http\JsonResponse) return $response;
-
-		//Data Mapping
-		$book = $iceAndFireApi->bookResource($response);
 
 		//Create Comment
 		$comment = new Comment();
 		$comment->book_id = $book_id;
 		$comment->body = $request->body;
-		$comment->client_ip = $request->client_ip();
-		$comment->user_name = 'Anonymous';
+		$comment->client_ip = $request->client_ip;
 		$comment->save();
 
 		//Payload

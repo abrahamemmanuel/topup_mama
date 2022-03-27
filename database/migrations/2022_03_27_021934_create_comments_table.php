@@ -15,7 +15,7 @@ class CreateCommentsTable extends Migration
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
-            $table->string('user_name');
+            $table->string('user_name')->default('Anonymous');
             $table->string('body', 500);
             $table->integer('book_id');
             $table->string('client_ip');

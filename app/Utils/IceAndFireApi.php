@@ -97,6 +97,7 @@ class IceAndFireApi
 			'country' => $book['country'],
 			'release_date' => $book['released'] != '' ? date('jS F Y', strtotime($book['released'])) : '',
 			'media_type' => $book['mediaType'],
+			'comments_count' => 0
 		];
 	}
 
