@@ -24,7 +24,7 @@ The book character endpoint returns the character list for the book with the giv
 - PHP 7.2 and above
 - Composer
 
-**Note:** The API is soley dependent on AnAPIofIceandFire.
+**Note:** The API is soley dependent on https://anapioficeandfire.com/
 
 - run composer install
 - run php artisan key:generate
