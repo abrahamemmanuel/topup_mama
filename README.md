@@ -1,24 +1,38 @@
-# Lumen PHP Framework
+#TopUp Mama Backend Assessment - Book Listing API
+##Introduction
+Thsi API can be used for listing the names of books along with their authors and comment count, adding and listing anonymous comments for a book, and getting the character list for a book
 
-[![Build Status](https://travis-ci.org/laravel/lumen-framework.svg)](https://travis-ci.org/laravel/lumen-framework)
-[![Total Downloads](https://img.shields.io/packagist/dt/laravel/framework)](https://packagist.org/packages/laravel/lumen-framework)
-[![Latest Stable Version](https://img.shields.io/packagist/v/laravel/framework)](https://packagist.org/packages/laravel/lumen-framework)
-[![License](https://img.shields.io/packagist/l/laravel/framework)](https://packagist.org/packages/laravel/lumen-framework)
+##Base URL
+http://143.110.151.70/api/v1
 
-Laravel Lumen is a stunningly fast PHP micro-framework for building web applications with expressive, elegant syntax. We believe development must be an enjoyable, creative experience to be truly fulfilling. Lumen attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as routing, database abstraction, queueing, and caching.
+##Endpoints
+###GET /books
+Book names in the book list endpoint are sorted by release date from earliest to newest and each book are listed along with authors and count of comments.
 
-## Official Documentation
+###GET /books/{book_id}
+The book detail endpoint returns the book name, author, release date, and count of comments & comments for the book with the given book_id.
 
-Documentation for the framework can be found on the [Lumen website](https://lumen.laravel.com/docs).
+###POST /books/{book_id}/comments
+The book comment endpoint allows anonymous users to add comments for the book with the given book_id.
 
-## Contributing
+###GET /books/{book_id}/characters
+The book character endpoint returns the character list for the book with the given book_id.
 
-Thank you for considering contributing to Lumen! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+###Setup/Installation
+##Prerequisites
+- PHP 7.2 and above
+- Composer
 
-## Security Vulnerabilities
+**Note:** The API is soley dependent on AnAPIofIceandFire.
 
-If you discover a security vulnerability within Lumen, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
+- run composer install
+- run php artisan key:generate
+- run php artisan migrate
+- run php artisan db:seed
 
-## License
+##Testing
+- run vendor/bin/phpunit
 
-The Lumen framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+##Documentation
+- The API doc is published on https://documenter.getpostman.com/view/5744463/UVyoVcxQ
