@@ -14,7 +14,7 @@ class CommentFactory extends Factory
     	return [
             'user_name' => 'Anonymous',
             'body' => $this->faker->sentence,
-            'book_id' => $this->faker->numberBetween(1, 100),
+            'book_id' => $this->faker->numberBetween(1, 12),
             'client_ip' => $this->faker->ipv4,
             'created_at' => $this->faker->dateTime,
             'updated_at' => $this->faker->dateTime,
