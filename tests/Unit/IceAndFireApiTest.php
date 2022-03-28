@@ -20,7 +20,7 @@ class IceAndFireApiTest extends TestCase
         $books = $iceAndFireApi->getBooks($query_params);
         $this->assertIsArray($books);
         $this->assertEquals(count($books), $pageSize * $page);
-        $this->assertCount(9, $iceAndFireApi->bookResource($books[0]));
+        $this->assertCount(10, $iceAndFireApi->bookResource($books[0]));
     }
 
     /**
@@ -33,7 +33,7 @@ class IceAndFireApiTest extends TestCase
         $iceAndFireApi = new IceAndFireApi();
         $book = $iceAndFireApi->getBookById($book_id);
         $this->assertIsArray($book);
-        $this->assertCount(9, $iceAndFireApi->bookResource($book));
+        $this->assertCount(10, $iceAndFireApi->bookResource($book));
     }
 
     /**

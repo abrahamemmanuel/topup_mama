@@ -8,6 +8,7 @@ use Illuminate\Validation\ValidationException;
 use Laravel\Lumen\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -55,6 +56,14 @@ class Handler extends ExceptionHandler
                 'error' => 'invalid_url',
                 'error_description' => 'The requested URL was not found on this server.',
             ], 404);
+        }
+
+        //MethodNotAllowedHttpException
+        if ($exception instanceof MethodNotAllowedHttpException) {
+            return response()->json([
+                'error' => 'invalid_method',
+                'error_description' => 'The method is not allowed for the requested URL.',
+            ], 405);
         }
         return parent::render($request, $exception);
     }
